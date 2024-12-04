@@ -1,0 +1,35 @@
+name: TruffleHog Scheduled Scan
+
+on:
+  schedule:
+    # Runs every day at midnight (UTC)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual runs
+
+jobs:
+  trufflehog:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install TruffleHog
+        run: |
+          python -m pip install --upgrade pip
+          pip install truffleHog
+
+      - name: Run TruffleHog Scan
+        run: |
+          trufflehog git . > trufflehog_report.txt
+
+      - name: Upload TruffleHog Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: trufflehog-report
+          path: trufflehog_report.txt
