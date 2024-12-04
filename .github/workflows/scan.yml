@@ -29,7 +29,7 @@ jobs:
           trufflehog --regex --entropy=True . > trufflehog_report.txt
 
       - name: Upload TruffleHog Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: trufflehog-report
           path: trufflehog_report.txt
