@@ -26,7 +26,7 @@ jobs:
 
       - name: Run TruffleHog Scan
         run: |
-          trufflehog git . > trufflehog_report.txt
+          trufflehog --regex --entropy=True . > trufflehog_report.txt
 
       - name: Upload TruffleHog Report
         uses: actions/upload-artifact@v3
