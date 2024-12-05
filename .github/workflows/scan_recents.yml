@@ -28,21 +28,10 @@ jobs:
 
       - name: Run TruffleHog Scan on Recent Commits
         run: |
-          echo "Starting TruffleHog scan on recent commits..." > trufflehog_raw_output.txt
+          echo "Starting TruffleHog scan on recent commits..." > trufflehog_report.txt
           latest_commit=$(git rev-parse HEAD)
           previous_commit=$(git rev-parse HEAD~5) # Scan the last 5 commits
-          trufflehog --regex --entropy=True --since_commit=$previous_commit $(git rev-parse --show-toplevel) >> trufflehog_raw_output.txt || true
-        
-      - name: Process TruffleHog Report to Group Results by File
-        run: |
-          echo "Processing raw TruffleHog output to group by file..."
-          awk '
-            /^Filepath: / {file=$0}
-            /^Reason: / {reason=$0}
-            /^Branch: / {branch=$0}
-            /^Commit: / {commit=$0}
-            /^@@/ {print file ORS reason ORS branch ORS commit ORS $0 ORS "~~~~~~~~~~~~~~~~~~~~~"}
-          ' trufflehog_raw_output.txt | sort | uniq > trufflehog_report.txt    
+          trufflehog --regex --entropy=True --since_commit=$previous_commit $(git rev-parse --show-toplevel) >> trufflehog_report.txt || true
 
       - name: Upload TruffleHog Report
         uses: actions/upload-artifact@v4
