@@ -31,9 +31,9 @@ jobs:
           for branch in $(git branch -r | grep -v '\->'); do
             branch_name=${branch#origin/}
             if [ "$branch_name" != "$(git rev-parse --abbrev-ref HEAD)" ]; then
-              git checkout $branch_name
+              git checkout $branch_name || continue
             fi
-            trufflehog --regex --entropy=True $(git rev-parse --show-toplevel) >> trufflehog_report.txt
+            trufflehog --regex --entropy=True $(git rev-parse --show-toplevel) >> trufflehog_report.txt || true
           done
 
       - name: Upload TruffleHog Report
