@@ -28,6 +28,7 @@ jobs:
 
       - name: Run TruffleHog Scan on All Branches
         run: |
+          set +e  # Disable bash strict mode to allow continuation on error
           echo "Starting TruffleHog scan on all branches..." > trufflehog_report.txt
           for branch in $(git branch -r | grep -v '\->'); do
             branch_name=${branch#origin/}
@@ -44,6 +45,7 @@ jobs:
               continue
             }
           done
+          set -e  # Re-enable bash strict mode
 
       - name: Upload TruffleHog Report
         uses: actions/upload-artifact@v4
