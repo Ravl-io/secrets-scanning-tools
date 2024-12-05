@@ -28,12 +28,21 @@ jobs:
 
       - name: Run TruffleHog Scan on All Branches
         run: |
+          echo "Starting TruffleHog scan on all branches..." > trufflehog_report.txt
           for branch in $(git branch -r | grep -v '\->'); do
             branch_name=${branch#origin/}
+            echo "Checking out branch: $branch_name" >> trufflehog_report.txt
             if [ "$branch_name" != "$(git rev-parse --abbrev-ref HEAD)" ]; then
-              git checkout $branch_name || continue
+              git checkout $branch_name || {
+                echo "Failed to checkout branch: $branch_name" >> trufflehog_report.txt
+                continue
+              }
             fi
-            trufflehog --regex --entropy=True $(git rev-parse --show-toplevel) >> trufflehog_report.txt || true
+            echo "Running TruffleHog on branch: $branch_name" >> trufflehog_report.txt
+            trufflehog --regex --entropy=True $(git rev-parse --show-toplevel) >> trufflehog_report.txt || {
+              echo "TruffleHog scan failed on branch: $branch_name" >> trufflehog_report.txt
+              continue
+            }
           done
 
       - name: Upload TruffleHog Report
