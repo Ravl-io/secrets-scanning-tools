@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all branches and full history
 
       - name: Install Python
         uses: actions/setup-python@v4
@@ -24,9 +26,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install truffleHog
 
-      - name: Run TruffleHog Scan
+      - name: Run TruffleHog Scan on All Branches
         run: |
-          trufflehog --regex --entropy=True . > trufflehog_report.txt
+          for branch in $(git branch -r | grep -v '\->'); do
+            git checkout ${branch#origin/}
+            trufflehog --regex --entropy=True $(git rev-parse --show-toplevel) >> trufflehog_report.txt
+          done
 
       - name: Upload TruffleHog Report
         uses: actions/upload-artifact@v4
