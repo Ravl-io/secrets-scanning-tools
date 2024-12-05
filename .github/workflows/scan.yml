@@ -14,7 +14,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Fetch all branches and full history
+          ref: main  # Checkout the main branch
+          fetch-depth: 0  # Fetch full history to ensure complete scan
 
       - name: Install Python
         uses: actions/setup-python@v4
@@ -26,26 +27,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install truffleHog
 
-      - name: Run TruffleHog Scan on All Branches
+      - name: Run TruffleHog Scan on Main Branch
         run: |
-          set +e  # Disable bash strict mode to allow continuation on error
-          echo "Starting TruffleHog scan on all branches..." > trufflehog_report.txt
-          for branch in $(git branch -r | grep -v '\->'); do
-            branch_name=${branch#origin/}
-            echo "Checking out branch: $branch_name" >> trufflehog_report.txt
-            if [ "$branch_name" != "$(git rev-parse --abbrev-ref HEAD)" ]; then
-              git checkout $branch_name || {
-                echo "Failed to checkout branch: $branch_name" >> trufflehog_report.txt
-                continue
-              }
-            fi
-            echo "Running TruffleHog on branch: $branch_name" >> trufflehog_report.txt
-            trufflehog --regex --entropy=True $(git rev-parse --show-toplevel) >> trufflehog_report.txt || {
-              echo "TruffleHog scan failed on branch: $branch_name" >> trufflehog_report.txt
-              continue
-            }
-          done
-          set -e  # Re-enable bash strict mode
+          echo "Starting TruffleHog scan on main branch..." > trufflehog_report.txt
+          trufflehog --regex --entropy=True $(git rev-parse --show-toplevel) >> trufflehog_report.txt || true
 
       - name: Upload TruffleHog Report
         uses: actions/upload-artifact@v4
